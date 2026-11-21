@@ -1,0 +1,57 @@
+"""Compare real Compose renders with supplied Figma pixels, excluding accepted font differences."""
+import json
+from pathlib import Path
+from PIL import Image, ImageChops, ImageDraw, ImageStat
+
+ROOT = Path(__file__).resolve().parents[1]
+REPORT = ROOT / "app/build/reports/screenshots"
+
+
+def compare(dark: bool) -> dict:
+    name = "main-dark" if dark else "main-light"
+    reference = ROOT / "figma/reference" / ("main-dark.png" if dark else "main-light@2x.png")
+    expected = Image.open(reference).convert("RGB")
+    actual = Image.open(REPORT / f"{name}.png").convert("RGB")
+    # Compare at the reference scale without upscaling a rasterized icon.
+    assert actual.width * 800 == actual.height * 360, f"Unexpected frame dimensions: {actual.size}"
+    if actual.size != expected.size:
+        actual = actual.resize(expected.size, Image.Resampling.BOX)
+    scale = actual.width / 360
+
+    mask = Image.new("L", actual.size, 255)
+    draw = ImageDraw.Draw(mask)
+    def box(x1, y1, x2, y2):
+        return tuple(round(value * scale) for value in (x1, y1, x2, y2))
+    # System font was explicitly accepted. Geometry, icons, curves and colors remain checked.
+    draw.rectangle(box(12, 10, 350, 50), fill=0)
+    for center in (111, 177, 243, 309):
+        draw.rectangle(box(58, center - 22, 302, center + 22), fill=0)
+    difference = ImageChops.difference(expected, actual)
+    stats = ImageStat.Stat(difference, mask)
+    mean_error = sum(stats.mean) / 3
+    # Per-slot checks prevent a missing or wrong icon hiding in a large white background.
+    slots = {}
+    for name_part, center in zip(("search", "playlists", "favorites", "settings"), (111, 177, 243, 309)):
+        for side, horizontal in (("icon", (28, 52)), ("chevron", (308, 332))):
+            region = box(horizontal[0], center - 12, horizontal[1], center + 12)
+            slot_error = sum(ImageStat.Stat(difference.crop(region)).mean) / 3
+            slots[f"{name_part}_{side}"] = round(slot_error, 4)
+    overlay = Image.blend(expected, actual, 0.5)
+    overlay.save(REPORT / f"{name}-overlay.png")
+    difference.point(lambda value: min(value * 4, 255)).save(REPORT / f"{name}-diff.png")
+    result = {"screen": name, "size": actual.size, "masked_mean_rgb_error": round(mean_error, 4),
+              "slot_mean_rgb_errors": slots}
+    # Modest per-pixel tolerance accommodates Figma/Skia antialiasing, not layout differences.
+    assert mean_error < 1.0, result
+    assert max(slots.values()) < 15.0, result
+    return result
+
+
+def main() -> None:
+    results = [compare(False), compare(True)]
+    (REPORT / "figma-comparison.json").write_text(json.dumps(results, indent=2) + "\n")
+    print(json.dumps(results, indent=2))
+
+
+if __name__ == "__main__":
+    main()
