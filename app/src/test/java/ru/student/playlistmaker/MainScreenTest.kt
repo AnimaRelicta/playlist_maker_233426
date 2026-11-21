@@ -20,6 +20,9 @@ import ru.student.playlistmaker.ui.theme.PlaylistTheme
 @Config(sdk = [34], qualifiers = "ru-w360dp-h800dp-xhdpi")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class MainScreenTest {
+    @org.junit.After
+    fun stopDependencyGraph() = org.koin.core.context.stopKoin()
+
     @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
 
     @Test fun allFourRowsAreAccessibleAndDispatchTheirOwnAction() {

@@ -16,12 +16,12 @@ import ru.student.playlistmaker.R
 import ru.student.playlistmaker.ui.theme.PlaylistFont
 
 @Composable
-fun ScreenHeader(@StringRes title: Int, onBack: () -> Unit) {
+fun ScreenHeader(@StringRes title: Int?, onBack: () -> Unit) {
     Row(Modifier.fillMaxWidth().height(56.dp), verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onBack, modifier = Modifier.size(56.dp)) {
             Icon(painterResource(R.drawable.ic_back), stringResource(R.string.back), Modifier.size(48.dp))
         }
-        Text(stringResource(title), Modifier.padding(start = 8.dp),
+        if (title != null) Text(stringResource(title), Modifier.padding(start = 8.dp),
             fontFamily = PlaylistFont, fontSize = 22.sp, fontWeight = FontWeight.Medium)
     }
 }

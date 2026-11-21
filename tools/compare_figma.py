@@ -78,11 +78,41 @@ def compare_sprint4() -> list[dict]:
     return results
 
 
+def compare_sprint5() -> list[dict]:
+    frames = (
+        ("search-results", "search-result.png", 240, 798),
+        ("search-empty", "search-empty.png", 1280, 800),
+        ("search-failure", "search-network-error.png", 244, 800),
+        ("track-details", "track-details.png", 1312, 832),
+    )
+    results = []
+    for name, source, top, height in frames:
+        with Image.open(ROOT / "figma/reference" / source) as sheet:
+            expected = sheet.crop((100, top, 460, top + height)).convert("RGB")
+        with Image.open(REPORT / f"{name}.png") as screenshot:
+            actual = screenshot.convert("RGB")
+        if actual.size != (720, 1600):
+            raise ValueError(f"Unexpected frame size for {name}: {actual.size}")
+        actual = actual.resize((360, 800), Image.Resampling.BOX)
+        expected = expected.crop((0, 0, 360, min(height, 800)))
+        actual = actual.crop((0, 0, 360, expected.height))
+        delta = ImageChops.difference(expected, actual)
+        Image.blend(expected, actual, 0.5).save(REPORT / f"{name}-overlay.png")
+        delta.save(REPORT / f"{name}-diff.png")
+        results.append({"screen": name, "mean_rgb_error": round(sum(ImageStat.Stat(delta).mean) / 3, 4)})
+    return results
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--sprint", type=int, choices=(3, 4), default=3)
+    parser.add_argument("--sprint", type=int, choices=(3, 4, 5), default=3)
     sprint = parser.parse_args().sprint
-    results = compare_sprint4() if sprint == 4 else [compare(False), compare(True)]
+    if sprint == 5:
+        results = compare_sprint5()
+    elif sprint == 4:
+        results = compare_sprint4()
+    else:
+        results = [compare(False), compare(True)]
     (REPORT / "figma-comparison.json").write_text(json.dumps(results, indent=2) + "\n")
     print(json.dumps(results, indent=2))
 

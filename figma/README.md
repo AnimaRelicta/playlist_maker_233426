@@ -8,3 +8,7 @@
 
 Для спринта 4 разместите там же экспорты `search-default.png` и `main-and-settings.png`.
 Запустите `uv run python tools/compare_figma.py --sprint 4` после тестов.
+
+Для спринта 5 используйте локальные экспорты `search-result.png`, `search-empty.png`,
+`search-network-error.png` и `track-details.png`. После тестов запустите
+`uv run python tools/compare_figma.py --sprint 5`.

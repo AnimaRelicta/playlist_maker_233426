@@ -12,6 +12,9 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class Sprint3NavigationTest {
+    @org.junit.After
+    fun stopDependencyGraph() = org.koin.core.context.stopKoin()
+
     private val context = ApplicationProvider.getApplicationContext<Context>()
 
     @Test fun mainActivityIsLauncher() {

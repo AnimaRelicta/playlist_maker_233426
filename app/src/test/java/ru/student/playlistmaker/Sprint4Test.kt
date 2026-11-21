@@ -17,7 +17,10 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 import ru.student.playlistmaker.ui.PlaylistHost
-import ru.student.playlistmaker.ui.search.SearchScreen
+import ru.student.playlistmaker.ui.search.SearchContent
+import ru.student.playlistmaker.ui.search.SearchState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import ru.student.playlistmaker.ui.settings.*
 import ru.student.playlistmaker.ui.theme.PlaylistTheme
 
@@ -25,6 +28,9 @@ import ru.student.playlistmaker.ui.theme.PlaylistTheme
 @Config(sdk = [34], qualifiers = "ru-w360dp-h800dp-xhdpi")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class Sprint4Test {
+    @org.junit.After
+    fun stopDependencyGraph() = org.koin.core.context.stopKoin()
+
     @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
 
     @Test fun allScreensOpenAndReturn() {
@@ -38,7 +44,10 @@ class Sprint4Test {
     }
 
     @Test fun inputCanBeCleared() {
-        compose.setContent { PlaylistTheme(false) { SearchScreen {} } }
+        compose.setContent {
+            var state by androidx.compose.runtime.remember { mutableStateOf(SearchState()) }
+            PlaylistTheme(false) { SearchContent(state, { state = SearchState(it) }, {}, {}, {}) }
+        }
         compose.onAllNodesWithText("Поиск").assertCountEquals(2)
         val field = compose.onNodeWithTag("search_input")
         field.assertTopPositionInRootIsEqualTo(64.dp).assertHeightIsEqualTo(36.dp)
@@ -82,7 +91,7 @@ class Sprint4Test {
     private fun render(dark: Boolean, settings: Boolean) {
         compose.setContent {
             PlaylistTheme(dark) {
-                if (settings) SettingsScreen(dark, {}, {}) else SearchScreen {}
+                if (settings) SettingsScreen(dark, {}, {}) else SearchContent(SearchState(), {}, {}, {}, {})
             }
         }
         val bitmap = compose.runOnIdle {
