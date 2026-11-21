@@ -1,4 +1,5 @@
 """Compare real Compose renders with supplied Figma pixels, excluding accepted font differences."""
+import argparse
 import json
 from pathlib import Path
 from PIL import Image, ImageChops, ImageDraw, ImageStat
@@ -47,8 +48,41 @@ def compare(dark: bool) -> dict:
     return result
 
 
+def compare_sprint4() -> list[dict]:
+    results = []
+    for screen, source, x in (
+        ("search", "search-default.png", 100),
+        ("settings", "main-and-settings.png", 560),
+    ):
+        ref = Image.open(ROOT / "figma/reference" / source).convert("RGB")
+        for theme, y in (("light", 240), ("dark", 1280)):
+            name = f"{screen}-{theme}"
+            expected = ref.crop((x, y, x + 360, y + 800))
+            actual = Image.open(REPORT / f"{name}.png").convert("RGB")
+            if actual.size not in ((360, 800), (720, 1600)):
+                raise ValueError(f"Unexpected frame size for {name}: {actual.size}")
+            actual = actual.resize(expected.size, Image.Resampling.BOX)
+            mask = Image.new("L", expected.size, 255)
+            draw = ImageDraw.Draw(mask)
+            draw.rectangle((62, 12, 340, 44), fill=0)
+            if screen == "search":
+                draw.rectangle((50, 68, 336, 96), fill=0)
+            else:
+                for center in (110, 171, 232, 293):
+                    draw.rectangle((14, center - 14, 290, center + 14), fill=0)
+            delta = ImageChops.difference(expected, actual)
+            error = sum(ImageStat.Stat(delta, mask).mean) / 3
+            Image.blend(expected, actual, 0.5).save(REPORT / f"{name}-overlay.png")
+            delta.point(lambda value: min(value * 4, 255)).save(REPORT / f"{name}-diff.png")
+            results.append({"screen": name, "masked_mean_rgb_error": round(error, 4)})
+    return results
+
+
 def main() -> None:
-    results = [compare(False), compare(True)]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--sprint", type=int, choices=(3, 4), default=3)
+    sprint = parser.parse_args().sprint
+    results = compare_sprint4() if sprint == 4 else [compare(False), compare(True)]
     (REPORT / "figma-comparison.json").write_text(json.dumps(results, indent=2) + "\n")
     print(json.dumps(results, indent=2))
 

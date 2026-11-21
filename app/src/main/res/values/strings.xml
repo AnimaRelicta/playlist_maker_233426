@@ -5,4 +5,14 @@
     <string name="favorites">Избранное</string>
     <string name="settings">Настройки</string>
     <string name="back">Назад</string>
+    <string name="clear_search">Очистить поиск</string>
+    <string name="dark_theme">Темная тема</string>
+    <string name="share">Поделиться приложением</string>
+    <string name="share_message">Попробуйте Playlist Maker! https://practicum.yandex.ru/android-developer/</string>
+    <string name="support">Написать в поддержку</string>
+    <string name="support_subject">Сообщение разработчикам и разработчицам приложения Playlist Maker</string>
+    <string name="support_body">Спасибо разработчикам и разработчицам за крутое приложение!</string>
+    <string name="agreement">Пользовательское соглашение</string>
+    <string name="agreement_url">https://yandex.ru/legal/practicum_offer/</string>
+    <string name="no_handler">Нет приложения для этого действия</string>
 </resources>
