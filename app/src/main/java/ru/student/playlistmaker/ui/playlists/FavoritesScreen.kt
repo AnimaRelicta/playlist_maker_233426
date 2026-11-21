@@ -19,7 +19,7 @@ import ru.student.playlistmaker.ui.search.TrackRow
 import ru.student.playlistmaker.ui.search.TrackStatusIllustration
 
 @Composable
-fun FavoritesScreen(tracks: List<Track>, onBack: () -> Unit, openTrack: (Track) -> Unit) {
+fun FavoritesScreen(tracks: List<Track>, onBack: () -> Unit, openTrack: (Track) -> Unit, removeFavorite: (Long) -> Unit) {
     Surface(Modifier.fillMaxSize().testTag("favorites_screen")) {
         Column {
             ScreenHeader(R.string.favorites, onBack)
@@ -34,7 +34,7 @@ fun FavoritesScreen(tracks: List<Track>, onBack: () -> Unit, openTrack: (Track) 
                 }
             } else {
                 LazyColumn {
-                    items(tracks, key = { it.id }) { track -> TrackRow(track) { openTrack(track) } }
+                    items(tracks, key = { it.id }) { track -> TrackRow(track, onLongClick = { removeFavorite(track.id) }) { openTrack(track) } }
                 }
             }
         }

@@ -45,4 +45,16 @@
     <string name="unknown_duration">—</string>
     <string name="playlist_length">%1$d мин · %2$s</string>
     <string name="favorites_empty">Ваша медиатека пуста</string>
+    <string name="playlist_cover">Обложка плейлиста</string>
+    <string name="choose_playlist_cover">Выбрать обложку</string>
+    <string name="playlist_cover_unavailable">Не удалось получить доступ к изображению</string>
+    <string name="delete_playlist">Удалить плейлист</string>
+    <string name="no_merge_targets">Нет других плейлистов для объединения</string>
+    <string name="choose_merge_target">Выберите плейлист для объединения</string>
+    <string name="playlists_merged">«%1$s» объединён с «%2$s»</string>
+    <string name="confirm_delete_playlist">Удалить плейлист «%1$s»?</string>
+    <string name="confirm_remove_playlist_track">Удалить «%1$s» из плейлиста?</string>
+    <string name="confirm_delete">Удалить</string>
+    <string name="cancel_action">Отмена</string>
+    <string name="ok">ОК</string>
 </resources>

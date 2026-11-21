@@ -4,6 +4,13 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
+val finalVariant = when (val value = providers.gradleProperty("finalVariant").getOrElse("1")) {
+    "1" -> "DELETE_PLAYLIST"
+    "2" -> "REMOVE_TRACK"
+    "3" -> "MERGE_PLAYLISTS"
+    else -> error("finalVariant must be 1, 2 or 3 (received: $value)")
+}
+
 android {
     namespace = "ru.student.playlistmaker"
     compileSdk = 35
@@ -11,8 +18,9 @@ android {
         applicationId = "ru.student.playlistmaker"
         minSdk = 26
         targetSdk = 35
-        versionCode = 7
-        versionName = "1.6"
+        versionCode = 8
+        versionName = "1.7"
+        buildConfigField("String", "FINAL_VARIANT", "\"$finalVariant\"")
         resValue("string", "support_email", providers.gradleProperty("playlistMakerSupportEmail").getOrElse(""))
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -21,7 +29,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
-    buildFeatures { compose = true }
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }

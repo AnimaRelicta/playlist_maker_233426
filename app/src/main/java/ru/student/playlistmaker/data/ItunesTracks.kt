@@ -94,5 +94,9 @@ internal class ItunesTracksRepository(
     }
 
     override suspend fun findById(id: Long): Track? = dao.findTrack(id)?.toDomain()
+    override suspend fun removeFavorite(trackId: Long) {
+        dao.removeFavorite(trackId)
+    }
+
     override suspend fun toggleFavorite(trackId: Long) = dao.toggleFavorite(trackId)
 }

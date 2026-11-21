@@ -61,13 +61,15 @@ internal class RoomPlaylistsRepository(private val dao: LibraryDao) : PlaylistsR
         rows.firstOrNull()?.playlist?.toDomain(rows)
     }
 
-    override suspend fun create(name: String, description: String): Long? {
+    override suspend fun create(name: String, description: String, coverImageUri: String?): Long? {
         val title = name.trim()
         if (title.isEmpty()) return null
-        return dao.create(PlaylistEntity(name = title, description = description.trim()))
+        return dao.create(PlaylistEntity(name = title, description = description.trim(), coverImageUri = coverImageUri))
     }
 
     override suspend fun delete(id: Long) = dao.deletePlaylist(id)
+
+    override suspend fun merge(sourceId: Long, targetId: Long) = dao.merge(sourceId, targetId)
 
     override suspend fun addTrack(playlistId: Long, trackId: Long): Boolean =
         dao.addTrack(playlistId, trackId) != -1L

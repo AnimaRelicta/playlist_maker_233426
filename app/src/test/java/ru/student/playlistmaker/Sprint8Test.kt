@@ -84,7 +84,7 @@ class Sprint8UiTest {
     @Test fun createPlaylistThenAddTrackFromSearchAndReopenIt() {
         useDemoSearch()
         GlobalContext.get().declare<CoroutineDispatcher>(Dispatchers.Main)
-        compose.setContent { PlaylistTheme(false) { PlaylistHost(rememberNavController(), false, {}) } }
+        compose.setContent { PlaylistTheme(false) { PlaylistHost(rememberNavController(), false, onThemeChange = {}) } }
         compose.onNodeWithTag("menu_playlists").performClick()
         compose.waitUntilExactlyOneExists(hasText("Best songs 2021"), 10_000)
         compose.onNodeWithContentDescription("Новый плейлист").performClick()
@@ -121,5 +121,8 @@ class Sprint8UiTest {
         compose.waitUntilExactlyOneExists(hasText("Michelle"), 10_000)
         compose.onNodeWithText("Michelle").performClick()
         compose.waitUntilExactlyOneExists(hasContentDescription("Убрать из избранного"), 10_000)
+        compose.onNodeWithContentDescription("Назад").performClick()
+        compose.onNodeWithText("Michelle").performTouchInput { longClick() }
+        compose.waitUntilExactlyOneExists(hasText("Ваша медиатека пуста"), 10_000)
     }
 }

@@ -1,7 +1,8 @@
 package ru.student.playlistmaker.ui.search
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -51,10 +52,11 @@ internal fun SearchResults(result: SearchResult, onRetry: () -> Unit, openTrack:
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-internal fun TrackRow(track: Track, onClick: () -> Unit) {
+internal fun TrackRow(track: Track, onLongClick: (() -> Unit)? = null, onClick: () -> Unit) {
     Row(Modifier.fillMaxWidth().heightIn(min = 61.dp).testTag("track_${track.id}")
-        .clickable(role = Role.Button, onClick = onClick).padding(horizontal = 13.dp),
+        .combinedClickable(role = Role.Button, onClick = onClick, onLongClick = onLongClick).padding(horizontal = 13.dp),
         verticalAlignment = Alignment.CenterVertically) {
         TrackArtwork(track, Modifier.size(45.dp))
         Column(Modifier.weight(1f).padding(start = 8.dp, end = 8.dp)) {

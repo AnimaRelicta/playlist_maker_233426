@@ -35,7 +35,7 @@ class Sprint5UiTest {
     @Test fun searchRouteUsesKoinAndOpensSelectedDetails() {
         useDemoSearch()
         GlobalContext.get().declare<CoroutineDispatcher>(Dispatchers.Main)
-        compose.setContent { PlaylistTheme(false) { PlaylistHost(rememberNavController(), false, {}) } }
+        compose.setContent { PlaylistTheme(false) { PlaylistHost(rememberNavController(), false, onThemeChange = {}) } }
         compose.onNodeWithTag("menu_search").performClick()
         compose.onNodeWithTag("search_input").performTextInput("yEsTeR")
         compose.onNodeWithContentDescription("Найти треки").performClick()

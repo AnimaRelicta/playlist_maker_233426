@@ -1,17 +1,16 @@
 # Playlist Maker
 
 Учебное Android-приложение на Kotlin и Jetpack Compose.
-Текущий этап — **спринт 10**. Плейлисты и избранное сохраняются в Room, история поиска — в DataStore. Поиск обращается к iTunes Search API и требует интернета.
-История, плейлисты и отметки избранного хранятся в памяти процесса.
+Текущий этап — **спринт 11**. В приложении можно сохранять обложки плейлистов. Финальное действие выбирается при сборке. Плейлисты и избранное сохраняются в Room, история поиска — в DataStore. Поиск обращается к iTunes Search API и требует интернета.
 
 ## Структура
 
-- [docs/README.md](docs/README.md) — собранные задания спринтов 3–9.
+- [docs/README.md](docs/README.md) — собранные задания спринтов 3–11.
 - [figma/README.md](figma/README.md) — каталог эталонов и SVG.
 - `app/src/main/` — Kotlin/Compose и Android-ресурсы текущего этапа.
 - `app/src/test/` — тесты навигации, UI и рендер двух тем на Robolectric.
 - [docs/verification.md](docs/verification.md) — результаты проверок и ограничения.
-- [docs/git-workflow.md](docs/git-workflow.md) — цепочка веток 3 → 4 → 5 → 6 → 8.
+- [docs/git-workflow.md](docs/git-workflow.md) — цепочка веток спринтов.
 
 ## Инструменты
 
@@ -42,6 +41,26 @@ APK: `app/build/outputs/apk/debug/app-debug.apk`.
 ```powershell
 $env:GRADLE_USER_HOME = Join-Path $env:TEMP 'playlistmaker-gradle'
 ```
+
+## Выбор финального варианта
+
+| Значение | Действие в приложении |
+|---|---|
+| 1 | Удаление плейлиста корзиной в деталях или долгим нажатием на плейлист в списке |
+| 2 | Удаление трека долгим нажатием на него внутри плейлиста |
+| 3 | Объединение плейлистов. Удерживайте исходный плейлист и выберите целевой в нижней панели |
+
+**Android Studio.** Откройте корневой gradle.properties, укажите одно значение (например, finalVariant=2), выполните **Sync Project with Gradle Files** и нажмите **Run** для модуля app. Чтобы установить APK вручную, выполните assembleDebug в окне Gradle или терминале. Для переключения измените значение, синхронизируйте и соберите приложение снова. Значение в репозитории по умолчанию — 1.
+
+**PowerShell.** Из корневой папки выполните одну команду. Параметр -P переопределяет gradle.properties для текущего запуска.
+
+```powershell
+./gradlew.bat assembleDebug -PfinalVariant=1
+./gradlew.bat assembleDebug -PfinalVariant=2
+./gradlew.bat assembleDebug -PfinalVariant=3
+```
+
+APK записывается в app/build/outputs/apk/debug/app-debug.apk. Скопируйте его под отдельным именем, если хотите сохранить несколько сборок. Установка другой сборки поверх текущей сохраняет данные, если APK подписаны тем же ключом. Обложки и избранное доступны во всех трёх сборках.
 
 ## uv и проверки
 

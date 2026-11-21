@@ -16,8 +16,9 @@ interface PlaylistsRepository {
     val playlists: Flow<List<Playlist>>
     fun getPlaylist(id: Long): Flow<Playlist?> =
         playlists.map { items -> items.firstOrNull { it.id == id } }.distinctUntilChanged()
-    suspend fun create(name: String, description: String): Long?
+    suspend fun create(name: String, description: String, coverImageUri: String? = null): Long?
     suspend fun delete(id: Long)
+    suspend fun merge(sourceId: Long, targetId: Long): Boolean
     suspend fun addTrack(playlistId: Long, trackId: Long): Boolean
     suspend fun removeTrack(playlistId: Long, trackId: Long)
 }
