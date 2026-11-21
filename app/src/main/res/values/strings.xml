@@ -15,4 +15,14 @@
     <string name="agreement">Пользовательское соглашение</string>
     <string name="agreement_url">https://yandex.ru/legal/practicum_offer/</string>
     <string name="no_handler">Нет приложения для этого действия</string>
+    <string name="start_search">Найти треки</string>
+    <string name="search_loading">Поиск треков</string>
+    <string name="search_empty">Ничего не нашлось</string>
+    <string name="search_failure">Проблемы со связью</string>
+    <string name="search_failure_description">Загрузка не удалась. Попробуйте ещё раз</string>
+    <string name="search_retry">Повторить</string>
+    <string name="track_metadata">%1$s • %2$s</string>
+    <string name="track_unavailable">Трек недоступен</string>
+    <string name="duration">Длительность</string>
+    <string name="add_to_playlist">Добавить в плейлист</string>
 </resources>

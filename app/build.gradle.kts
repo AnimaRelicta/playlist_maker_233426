@@ -10,8 +10,8 @@ android {
         applicationId = "ru.student.playlistmaker"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 3
+        versionName = "1.2"
         resValue("string", "support_email", providers.gradleProperty("playlistMakerSupportEmail").getOrElse(""))
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -30,6 +30,9 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.10.1")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.navigation:navigation-compose:2.8.9")
+    implementation("io.insert-koin:koin-androidx-compose:4.0.2")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.14.1")
