@@ -4,7 +4,15 @@ import java.util.Locale
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
-data class Track(val id: Int, val title: String, val artist: String, val durationMillis: Long, val artwork: Artwork) {
+data class Track(
+    val id: Int,
+    val title: String,
+    val artist: String,
+    val durationMillis: Long,
+    val artwork: Artwork,
+    val artworkUrl: String? = null,
+    val durationKnown: Boolean = true,
+) {
     enum class Artwork { NONE, BEATLES }
 
     val duration: String

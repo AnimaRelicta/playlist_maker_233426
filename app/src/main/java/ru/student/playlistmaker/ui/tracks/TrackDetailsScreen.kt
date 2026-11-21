@@ -1,6 +1,10 @@
 package ru.student.playlistmaker.ui.tracks
 
 import androidx.compose.foundation.Image
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import coil.request.CachePolicy
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -32,15 +36,31 @@ import ru.student.playlistmaker.ui.theme.PlaylistFont
 
 @Composable
 fun TrackArtwork(track: Track, modifier: Modifier) {
-    if (track.artwork == Track.Artwork.BEATLES) {
+    val url = track.artworkUrl
+    if (url != null) {
+        val request = ImageRequest.Builder(LocalContext.current)
+            .data(url)
+            .diskCachePolicy(CachePolicy.DISABLED)
+            .build()
+        Box(modifier.clip(RoundedCornerShape(4.dp)), contentAlignment = Alignment.Center) {
+            ArtworkPlaceholder()
+            AsyncImage(request, contentDescription = null, modifier = Modifier.matchParentSize(),
+                contentScale = ContentScale.Crop)
+        }
+    } else if (track.artwork == Track.Artwork.BEATLES) {
         Image(painterResource(R.drawable.beatles_artwork), null,
             modifier.clip(RoundedCornerShape(4.dp)), contentScale = ContentScale.Crop)
     } else {
         Box(modifier, contentAlignment = Alignment.Center) {
-            Icon(painterResource(R.drawable.ic_track_placeholder), null,
-                Modifier.fillMaxSize(0.62f), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            ArtworkPlaceholder()
         }
     }
+}
+
+@Composable
+private fun ArtworkPlaceholder() {
+    Icon(painterResource(R.drawable.ic_track_placeholder), null, Modifier.fillMaxSize(0.62f),
+        tint = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
 @Composable
@@ -65,9 +85,9 @@ fun TrackDetailsScreen(
                         Column(Modifier.padding(horizontal = 24.dp)) {
                             TrackArtwork(track, Modifier.fillMaxWidth().aspectRatio(1f))
                             Spacer(Modifier.height(24.dp))
-                            Text(track.title, fontFamily = PlaylistFont, fontWeight = FontWeight.Medium, fontSize = 22.sp)
+                            Text(track.title.ifBlank { stringResource(R.string.unknown_track) }, fontFamily = PlaylistFont, fontWeight = FontWeight.Medium, fontSize = 22.sp)
                             Spacer(Modifier.height(8.dp))
-                            Text(track.artist, fontFamily = PlaylistFont, fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                            Text(track.artist.ifBlank { stringResource(R.string.unknown_artist) }, fontFamily = PlaylistFont, fontWeight = FontWeight.Medium, fontSize = 14.sp)
                             Spacer(Modifier.height(52.dp))
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 TrackAction(R.drawable.ic_add_playlist, R.string.add_to_playlist) { showPicker = true }
@@ -79,7 +99,7 @@ fun TrackDetailsScreen(
                         Spacer(Modifier.height(30.dp))
                         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text(stringResource(R.string.duration), fontSize = 13.sp, color = PlaylistColors.Gray)
-                            Text(track.duration, fontSize = 13.sp)
+                            Text(if (track.durationKnown) track.duration else stringResource(R.string.unknown_duration), fontSize = 13.sp)
                         }
                     }
                 }

@@ -31,6 +31,7 @@ class Sprint5UiTest {
     @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
 
     @Test fun searchRouteUsesKoinAndOpensSelectedDetails() {
+        useDemoSearch()
         GlobalContext.get().declare<CoroutineDispatcher>(Dispatchers.Main)
         compose.setContent { PlaylistTheme(false) { PlaylistHost(rememberNavController(), false, {}) } }
         compose.onNodeWithTag("menu_search").performClick()
@@ -66,7 +67,7 @@ class Sprint5UiTest {
             SearchContent(SearchState("Queen", SearchResult.Fail(null)), {}, { retries++ }, {}, {})
         }
         compose.onNodeWithText("Проблемы со связью").assertIsDisplayed()
-        compose.onNodeWithText("Повторить").performClick()
+        compose.onNodeWithText("Обновить").performClick()
         org.junit.Assert.assertEquals(1, retries)
     }
 

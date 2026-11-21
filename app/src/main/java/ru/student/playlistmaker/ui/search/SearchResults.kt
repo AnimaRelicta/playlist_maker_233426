@@ -58,9 +58,11 @@ internal fun TrackRow(track: Track, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically) {
         TrackArtwork(track, Modifier.size(45.dp))
         Column(Modifier.weight(1f).padding(start = 8.dp, end = 8.dp)) {
-            Text(track.title, fontFamily = PlaylistFont, fontSize = 16.sp, maxLines = 1,
+            Text(track.title.ifBlank { stringResource(R.string.unknown_track) }, fontFamily = PlaylistFont, fontSize = 16.sp, maxLines = 1,
                 overflow = TextOverflow.Ellipsis)
-            Text(stringResource(R.string.track_metadata, track.artist, track.duration),
+            val artist = track.artist.ifBlank { stringResource(R.string.unknown_artist) }
+            val duration = if (track.durationKnown) track.duration else stringResource(R.string.unknown_duration)
+            Text(stringResource(R.string.track_metadata, artist, duration),
                 color = MaterialTheme.colorScheme.onSurfaceVariant, fontFamily = PlaylistFont,
                 fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }

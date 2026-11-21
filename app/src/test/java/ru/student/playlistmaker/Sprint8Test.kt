@@ -101,6 +101,7 @@ class Sprint8UiTest {
     @After fun stopDependencyGraph() = stopKoin()
 
     @Test fun createPlaylistThenAddTrackFromSearchAndReopenIt() {
+        useDemoSearch()
         GlobalContext.get().declare<CoroutineDispatcher>(Dispatchers.Main)
         compose.setContent { PlaylistTheme(false) { PlaylistHost(rememberNavController(), false, {}) } }
         compose.onNodeWithTag("menu_playlists").performClick()

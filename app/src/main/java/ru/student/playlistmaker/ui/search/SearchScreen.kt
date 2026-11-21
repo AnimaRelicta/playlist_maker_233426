@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -57,6 +58,7 @@ internal fun SearchContent(
 ) {
     val query = state.query
     val focus = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
     val submit = {
         if (query.isNotBlank()) {
             focus.clearFocus()
@@ -98,7 +100,11 @@ internal fun SearchContent(
                                 input()
                             }
                             if (query.isNotEmpty()) {
-                                IconButton(onClick = { changeQuery("") }, modifier = Modifier.size(40.dp, 36.dp)) {
+                                IconButton(onClick = {
+                                    focus.clearFocus()
+                                    keyboard?.hide()
+                                    changeQuery("")
+                                }, modifier = Modifier.size(40.dp, 36.dp)) {
                                     Icon(painterResource(R.drawable.ic_clear_field), stringResource(R.string.clear_search),
                                         Modifier.size(40.dp, 36.dp), tint = hintColor)
                                 }

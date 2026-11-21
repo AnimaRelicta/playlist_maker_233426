@@ -7,7 +7,19 @@ import ru.student.playlistmaker.domain.Playlist
 import ru.student.playlistmaker.domain.Track
 
 internal class DatabaseMock(private val catalog: TrackStorage) {
-    private val tracks = catalog.tracks.associate { it.id to it.toTrack() }
+    private val tracks = catalog.tracks.associate { it.id to it.toTrack() }.toMutableMap()
+    private val remoteIds = mutableMapOf<Long, Int>()
+    private var nextRemoteId = -1
+
+    @Synchronized
+    fun findTrack(id: Int): Track? = tracks[id]
+
+    @Synchronized
+    fun cacheSongs(songs: List<ItunesSong>): List<Track> = songs.map { song ->
+        val id = remoteIds.getOrPut(song.appleId) { nextRemoteId-- }
+        Track(id, song.title, song.artist, song.durationMillis ?: 0L, Track.Artwork.NONE,
+            artworkUrl = song.artworkUrl, durationKnown = song.durationMillis != null).also { tracks[id] = it }
+    }
     private var nextId = 3L
     private val links = mutableMapOf<Long, LinkedHashSet<Int>>()
     private val playlistState = MutableStateFlow(listOf(
@@ -54,6 +66,7 @@ internal class DatabaseMock(private val catalog: TrackStorage) {
         playlistState.value = playlistState.value.map { if (it.id == id) it.copy(tracks = members) else it }
     }
 
+    @Synchronized
     fun toggleFavorite(trackId: Int) {
         if (trackId in tracks) favoriteState.update { if (trackId in it) it - trackId else it + trackId }
     }

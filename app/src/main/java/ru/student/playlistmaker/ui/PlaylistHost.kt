@@ -1,6 +1,8 @@
 package ru.student.playlistmaker.ui
 
 import androidx.compose.runtime.Composable
+import org.koin.core.parameter.parametersOf
+import ru.student.playlistmaker.ui.playlists.PlaylistViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
@@ -68,10 +70,10 @@ fun PlaylistHost(navController: NavHostController, dark: Boolean, onThemeChange:
         }
         composable("${PlaylistScreen.PLAYLIST_DETAILS.name}/{playlistId}",
             arguments = listOf(navArgument("playlistId") { type = NavType.LongType })) { entry ->
-            val vm: LibraryViewModel = koinViewModel()
-            val playlists by vm.playlists.collectAsStateWithLifecycle()
-            val id = entry.arguments?.getLong("playlistId")
-            PlaylistDetailsScreen(playlists.firstOrNull { it.id == id }, back, ::openTrack)
+            val id = requireNotNull(entry.arguments).getLong("playlistId")
+            val vm: PlaylistViewModel = koinViewModel { parametersOf(id) }
+            val playlist by vm.playlist.collectAsStateWithLifecycle(null)
+            PlaylistDetailsScreen(playlist, back, ::openTrack)
         }
         composable(PlaylistScreen.FAVORITES.name) { PlaceholderScreen(R.string.favorites, "favorites_screen", back) }
     }
