@@ -17,7 +17,8 @@ import java.io.IOException
 @OptIn(ExperimentalCoroutinesApi::class)
 class SearchTest {
     @Test fun localRepositoryTrimsAndMatchesTitleOrArtist() = runTest {
-        val repository = LocalTracksRepository(LocalTracksClient(TrackStorage()))
+        val storage = TrackStorage()
+        val repository = LocalTracksRepository(LocalTracksClient(storage), DatabaseMock(storage))
         assertEquals(emptyList<Track>(), repository.search("  "))
         assertEquals(listOf(1), repository.search("  yeSTER  ").map { it.id })
         assertEquals(8, repository.search("Beatles").size)
@@ -33,7 +34,8 @@ class SearchTest {
         Dispatchers.setMain(dispatcher)
         val store = ViewModelStore()
         try {
-            val vm = SearchViewModel(LocalTracksRepository(LocalTracksClient(TrackStorage())), dispatcher)
+            val storage = TrackStorage()
+            val vm = SearchViewModel(LocalTracksRepository(LocalTracksClient(storage), DatabaseMock(storage)), dispatcher)
             store.put("search", vm)
             assertEquals(SearchResult.Initial, vm.state.value.result)
             vm.changeQuery("Beatles")
@@ -69,6 +71,9 @@ class SearchTest {
                     return emptyList()
                 }
                 override fun findById(id: Int): Track? = null
+                    override val favoriteIds = kotlinx.coroutines.flow.flowOf(emptySet<Int>())
+                    override val favorites = kotlinx.coroutines.flow.flowOf(emptyList<Track>())
+                    override fun toggleFavorite(trackId: Int) = Unit
             }, dispatcher)
             store.put("search", vm)
             vm.search()
@@ -102,6 +107,9 @@ class SearchTest {
                     return listOf(selected)
                 }
                 override fun findById(id: Int): Track? = null
+                    override val favoriteIds = kotlinx.coroutines.flow.flowOf(emptySet<Int>())
+                    override val favorites = kotlinx.coroutines.flow.flowOf(emptyList<Track>())
+                    override fun toggleFavorite(trackId: Int) = Unit
             }
             val vm = SearchViewModel(repository, io)
             store.put("search", vm)

@@ -52,7 +52,7 @@ internal fun SearchResults(result: SearchResult, onRetry: () -> Unit, openTrack:
 }
 
 @Composable
-private fun TrackRow(track: Track, onClick: () -> Unit) {
+internal fun TrackRow(track: Track, onClick: () -> Unit) {
     Row(Modifier.fillMaxWidth().heightIn(min = 61.dp).testTag("track_${track.id}")
         .clickable(role = Role.Button, onClick = onClick).padding(horizontal = 13.dp),
         verticalAlignment = Alignment.CenterVertically) {

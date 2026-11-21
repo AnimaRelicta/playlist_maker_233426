@@ -1,6 +1,9 @@
 package ru.student.playlistmaker.data
 
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
+import ru.student.playlistmaker.domain.PlaylistsRepository
+import ru.student.playlistmaker.domain.SearchHistoryRepository
 import org.koin.dsl.module
 import ru.student.playlistmaker.domain.Track
 import ru.student.playlistmaker.domain.TracksRepository
@@ -34,7 +37,14 @@ internal class LocalTracksClient(private val storage: TrackStorage) : TracksClie
     override fun findById(id: Int): TrackDto? = storage.tracks.firstOrNull { it.id == id }
 }
 
-internal class LocalTracksRepository(private val client: TracksClient) : TracksRepository {
+internal class LocalTracksRepository(
+    private val client: TracksClient,
+    private val database: DatabaseMock,
+) : TracksRepository {
+    override val favoriteIds = database.favorites
+    override val favorites = favoriteIds.map { ids -> ids.mapNotNull(::findById) }
+    override fun toggleFavorite(trackId: Int) = database.toggleFavorite(trackId)
+
     override suspend fun search(query: String): List<Track> {
         val term = query.trim()
         if (term.isEmpty()) return emptyList()
@@ -45,13 +55,32 @@ internal class LocalTracksRepository(private val client: TracksClient) : TracksR
 
     override fun findById(id: Int): Track? = client.findById(id)?.toTrack()
 
-    private fun TrackDto.toTrack() = Track(
-        id, title, artist, millis, if (hasArtwork) Track.Artwork.BEATLES else Track.Artwork.NONE,
-    )
 }
+
+internal fun TrackDto.toTrack() = Track(
+    id, title, artist, millis, if (hasArtwork) Track.Artwork.BEATLES else Track.Artwork.NONE,
+)
 
 val tracksDataModule = module {
     single { TrackStorage() }
     single<TracksClient> { LocalTracksClient(get()) }
-    single<TracksRepository> { LocalTracksRepository(get()) }
+    single { DatabaseMock(get()) }
+    single<TracksRepository> { LocalTracksRepository(get(), get()) }
+    single<PlaylistsRepository> {
+        val db = get<DatabaseMock>()
+        object : PlaylistsRepository {
+            override val playlists = db.playlists
+            override fun create(name: String, description: String) = db.create(name, description)
+            override fun delete(id: Long) = db.delete(id)
+            override fun addTrack(playlistId: Long, trackId: Int) = db.addTrack(playlistId, trackId)
+            override fun removeTrack(playlistId: Long, trackId: Int) = db.removeTrack(playlistId, trackId)
+        }
+    }
+    single<SearchHistoryRepository> {
+        val db = get<DatabaseMock>()
+        object : SearchHistoryRepository {
+            override val queries = db.history
+            override fun record(query: String) = db.record(query)
+        }
+    }
 }

@@ -9,10 +9,12 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 import ru.student.playlistmaker.data.tracksDataModule
 import ru.student.playlistmaker.ui.search.SearchViewModel
+import ru.student.playlistmaker.ui.playlists.LibraryViewModel
 
 val searchModule = module {
     single<CoroutineDispatcher> { Dispatchers.IO }
-    viewModel { SearchViewModel(get(), get()) }
+    viewModel { SearchViewModel(get(), get(), get()) }
+    viewModel { LibraryViewModel(get(), get()) }
 }
 
 class PlaylistApplication : Application() {

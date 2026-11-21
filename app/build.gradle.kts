@@ -10,8 +10,8 @@ android {
         applicationId = "ru.student.playlistmaker"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.3"
+        versionCode = 5
+        versionName = "1.4"
         resValue("string", "support_email", providers.gradleProperty("playlistMakerSupportEmail").getOrElse(""))
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

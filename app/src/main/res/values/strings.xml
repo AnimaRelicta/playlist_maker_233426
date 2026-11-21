@@ -25,4 +25,19 @@
     <string name="track_unavailable">Трек недоступен</string>
     <string name="duration">Длительность</string>
     <string name="add_to_playlist">Добавить в плейлист</string>
+    <string name="new_playlist">Новый плейлист</string>
+    <string name="playlist_name">Название*</string>
+    <string name="playlist_description">Описание</string>
+    <string name="save_playlist">Сохранить</string>
+    <string name="playlist_unavailable">Плейлист недоступен</string>
+    <string name="add_favorite">Добавить в избранное</string>
+    <string name="remove_favorite">Убрать из избранного</string>
+    <string name="track_added">Трек добавлен в плейлист</string>
+    <string name="track_already_added">Трек уже в плейлисте</string>
+    <plurals name="playlist_tracks">
+        <item quantity="one">%d трек</item>
+        <item quantity="few">%d трека</item>
+        <item quantity="many">%d треков</item>
+        <item quantity="other">%d трека</item>
+    </plurals>
 </resources>

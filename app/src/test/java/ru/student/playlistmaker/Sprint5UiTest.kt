@@ -71,7 +71,7 @@ class Sprint5UiTest {
     }
 
     @Test fun renderTrackDetailsDark() = render(true, "track-details") {
-        TrackDetailsScreen(GlobalContext.get().get<TracksRepository>().findById(1)) {}
+        TrackDetailsScreen(GlobalContext.get().get<TracksRepository>().findById(1), onBack = {})
     }
 
     private fun render(dark: Boolean, name: String, screen: @androidx.compose.runtime.Composable () -> Unit) {
