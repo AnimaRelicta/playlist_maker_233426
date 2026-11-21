@@ -1,6 +1,5 @@
 package ru.student.playlistmaker
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,23 +7,30 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Modifier
-import ru.student.playlistmaker.ui.main.MainScreen
+import androidx.navigation.compose.rememberNavController
+import ru.student.playlistmaker.ui.PlaylistHost
 import ru.student.playlistmaker.ui.theme.PlaylistTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val settings = getSharedPreferences("appearance", MODE_PRIVATE)
         setContent {
-            PlaylistTheme {
+            var preference by rememberSaveable {
+                mutableStateOf(if (settings.contains("dark")) settings.getBoolean("dark", false) else null)
+            }
+            val dark = preference ?: isSystemInDarkTheme()
+            PlaylistTheme(darkTheme = dark) {
                 Box(Modifier.fillMaxSize().safeDrawingPadding()) {
-                    MainScreen(
-                        onSearch = { startActivity(Intent(this@MainActivity, SearchActivity::class.java)) },
-                        onPlaylists = { startActivity(Intent(this@MainActivity, PlaylistsActivity::class.java)) },
-                        onFavorites = { startActivity(Intent(this@MainActivity, FavoritesActivity::class.java)) },
-                        onSettings = { startActivity(Intent(this@MainActivity, SettingsActivity::class.java)) },
-                    )
+                    PlaylistHost(rememberNavController(), dark) {
+                        preference = it
+                        settings.edit().putBoolean("dark", it).apply()
+                    }
                 }
             }
         }

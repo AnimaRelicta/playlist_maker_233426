@@ -6,10 +6,6 @@
         android:theme="@style/Theme.PlaylistMaker"
         android:allowBackup="false"
         android:supportsRtl="true">
-        <activity android:name=".SearchActivity" android:exported="false" />
-        <activity android:name=".SettingsActivity" android:exported="false" />
-        <activity android:name=".PlaylistsActivity" android:exported="false" />
-        <activity android:name=".FavoritesActivity" android:exported="false" />
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

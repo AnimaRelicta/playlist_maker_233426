@@ -20,7 +20,7 @@ def check() -> int:
     manifest = ET.parse(ROOT / "app/src/main/AndroidManifest.xml").getroot()
     namespace = "{http://schemas.android.com/apk/res/android}"
     names = {item.attrib[namespace + "name"] for item in manifest.findall("application/activity")}
-    for name in (".MainActivity", ".SearchActivity", ".SettingsActivity", ".PlaylistsActivity", ".FavoritesActivity"):
+    for name in (".MainActivity",):
         assert name in names, f"Missing Activity declaration: {name}"
     resources = ET.parse(ROOT / "app/src/main/res/values/strings.xml").getroot()
     strings = {item.attrib["name"] for item in resources.findall("string")}
