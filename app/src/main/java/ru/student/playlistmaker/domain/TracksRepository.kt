@@ -2,10 +2,9 @@ package ru.student.playlistmaker.domain
 
 import java.util.Locale
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 
 data class Track(
-    val id: Int,
+    val id: Long,
     val title: String,
     val artist: String,
     val durationMillis: Long,
@@ -24,8 +23,8 @@ data class Track(
 
 interface TracksRepository {
     suspend fun search(query: String): List<Track>
-    fun findById(id: Int): Track?
-    val favoriteIds: Flow<Set<Int>>
+    suspend fun findById(id: Long): Track?
+    val favoriteIds: Flow<Set<Long>>
     val favorites: Flow<List<Track>>
-    fun toggleFavorite(trackId: Int)
+    suspend fun toggleFavorite(trackId: Long)
 }

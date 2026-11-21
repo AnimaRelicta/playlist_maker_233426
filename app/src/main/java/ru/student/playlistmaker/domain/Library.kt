@@ -1,6 +1,6 @@
 package ru.student.playlistmaker.domain
 
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -13,16 +13,16 @@ data class Playlist(
 )
 
 interface PlaylistsRepository {
-    val playlists: StateFlow<List<Playlist>>
-    fun getPlaylist(id: Long): kotlinx.coroutines.flow.Flow<Playlist?> =
+    val playlists: Flow<List<Playlist>>
+    fun getPlaylist(id: Long): Flow<Playlist?> =
         playlists.map { items -> items.firstOrNull { it.id == id } }.distinctUntilChanged()
-    fun create(name: String, description: String): Long?
-    fun delete(id: Long)
-    fun addTrack(playlistId: Long, trackId: Int): Boolean
-    fun removeTrack(playlistId: Long, trackId: Int)
+    suspend fun create(name: String, description: String): Long?
+    suspend fun delete(id: Long)
+    suspend fun addTrack(playlistId: Long, trackId: Long): Boolean
+    suspend fun removeTrack(playlistId: Long, trackId: Long)
 }
 
 interface SearchHistoryRepository {
-    val queries: StateFlow<List<String>>
-    fun record(query: String)
+    val queries: Flow<List<String>>
+    suspend fun record(query: String)
 }

@@ -75,7 +75,7 @@ internal fun TrackRow(track: Track, onClick: () -> Unit) {
 private fun SearchMessage(failed: Boolean, onRetry: () -> Unit) {
     Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(top = 112.dp),
         horizontalAlignment = Alignment.CenterHorizontally) {
-        SearchIllustration(failed)
+        TrackStatusIllustration(failed)
         Spacer(Modifier.height(20.dp))
         Text(stringResource(if (failed) R.string.search_failure else R.string.search_empty),
             fontFamily = PlaylistFont, fontSize = 18.sp, fontWeight = FontWeight.Medium,
@@ -89,7 +89,7 @@ private fun SearchMessage(failed: Boolean, onRetry: () -> Unit) {
 }
 
 @Composable
-private fun SearchIllustration(failed: Boolean) {
+internal fun TrackStatusIllustration(failed: Boolean) {
     val note = MaterialTheme.colorScheme.onSurface
     Canvas(Modifier.size(102.dp, 114.dp)) {
         scale(size.width / 102f, size.height / 114f, pivot = Offset.Zero) {

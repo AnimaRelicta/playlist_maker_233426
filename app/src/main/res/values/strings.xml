@@ -44,4 +44,5 @@
     <string name="unknown_artist">Неизвестный исполнитель</string>
     <string name="unknown_duration">—</string>
     <string name="playlist_length">%1$d мин · %2$s</string>
+    <string name="favorites_empty">Ваша медиатека пуста</string>
 </resources>

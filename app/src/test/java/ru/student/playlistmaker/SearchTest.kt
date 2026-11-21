@@ -18,9 +18,9 @@ import java.io.IOException
 class SearchTest {
     @Test fun localRepositoryTrimsAndMatchesTitleOrArtist() = runTest {
         val storage = TrackStorage()
-        val repository = LocalTracksRepository(LocalTracksClient(storage), DatabaseMock(storage))
+        val repository = LocalTracksRepository(LocalTracksClient(storage))
         assertEquals(emptyList<Track>(), repository.search("  "))
-        assertEquals(listOf(1), repository.search("  yeSTER  ").map { it.id })
+        assertEquals(listOf(1L), repository.search("  yeSTER  ").map { it.id })
         assertEquals(8, repository.search("Beatles").size)
         assertTrue(repository.search("missing song").isEmpty())
         assertEquals("02:05", repository.findById(1)?.duration)
@@ -35,7 +35,7 @@ class SearchTest {
         val store = ViewModelStore()
         try {
             val storage = TrackStorage()
-            val vm = SearchViewModel(LocalTracksRepository(LocalTracksClient(storage), DatabaseMock(storage)), dispatcher)
+            val vm = SearchViewModel(LocalTracksRepository(LocalTracksClient(storage)), dispatcher)
             store.put("search", vm)
             assertEquals(SearchResult.Initial, vm.state.value.result)
             vm.changeQuery("Beatles")
@@ -70,10 +70,10 @@ class SearchTest {
                     if (++calls == 1) throw IOException("Unavailable")
                     return emptyList()
                 }
-                override fun findById(id: Int): Track? = null
-                    override val favoriteIds = kotlinx.coroutines.flow.flowOf(emptySet<Int>())
+                override suspend fun findById(id: Long): Track? = null
+                    override val favoriteIds = kotlinx.coroutines.flow.flowOf(emptySet<Long>())
                     override val favorites = kotlinx.coroutines.flow.flowOf(emptyList<Track>())
-                    override fun toggleFavorite(trackId: Int) = Unit
+                    override suspend fun toggleFavorite(trackId: Long) = Unit
             }, dispatcher)
             store.put("search", vm)
             vm.search()
@@ -106,10 +106,10 @@ class SearchTest {
                     }
                     return listOf(selected)
                 }
-                override fun findById(id: Int): Track? = null
-                    override val favoriteIds = kotlinx.coroutines.flow.flowOf(emptySet<Int>())
+                override suspend fun findById(id: Long): Track? = null
+                    override val favoriteIds = kotlinx.coroutines.flow.flowOf(emptySet<Long>())
                     override val favorites = kotlinx.coroutines.flow.flowOf(emptyList<Track>())
-                    override fun toggleFavorite(trackId: Int) = Unit
+                    override suspend fun toggleFavorite(trackId: Long) = Unit
             }
             val vm = SearchViewModel(repository, io)
             store.put("search", vm)

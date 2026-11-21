@@ -1,10 +1,8 @@
 package ru.student.playlistmaker.data
 
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import ru.student.playlistmaker.domain.PlaylistsRepository
-import ru.student.playlistmaker.domain.SearchHistoryRepository
-import org.koin.dsl.module
 import ru.student.playlistmaker.domain.Track
 import ru.student.playlistmaker.domain.TracksRepository
 
@@ -39,49 +37,30 @@ internal class LocalTracksClient(private val storage: TrackStorage) : TracksClie
 
 internal class LocalTracksRepository(
     private val client: TracksClient,
-    private val database: DatabaseMock,
+    private val dao: LibraryDao? = null,
 ) : TracksRepository {
-    override val favoriteIds = database.favorites
-    override val favorites = favoriteIds.map { ids -> ids.mapNotNull(::findById) }
-    override fun toggleFavorite(trackId: Int) = database.toggleFavorite(trackId)
+    override val favorites = dao?.favorites()?.map { tracks ->
+        tracks.map { it.toDomain() }
+    } ?: flowOf(emptyList())
+    override val favoriteIds = favorites.map { tracks -> tracks.mapTo(mutableSetOf()) { it.id } }
+    override suspend fun toggleFavorite(trackId: Long) {
+        dao?.toggleFavorite(trackId)
+    }
 
     override suspend fun search(query: String): List<Track> {
         val term = query.trim()
         if (term.isEmpty()) return emptyList()
-        return client.load().filter {
+        val results = client.load().filter {
             it.title.contains(term, ignoreCase = true) || it.artist.contains(term, ignoreCase = true)
         }.map { it.toTrack() }
+        dao?.saveTracks(results.map { it.toEntity() })
+        return results
     }
 
-    override fun findById(id: Int): Track? = client.findById(id)?.toTrack()
+    override suspend fun findById(id: Long): Track? = client.findById(id.toInt())?.toTrack()
 
 }
 
 internal fun TrackDto.toTrack() = Track(
-    id, title, artist, millis, if (hasArtwork) Track.Artwork.BEATLES else Track.Artwork.NONE,
+    id.toLong(), title, artist, millis, if (hasArtwork) Track.Artwork.BEATLES else Track.Artwork.NONE,
 )
-
-val tracksDataModule = module {
-    single { TrackStorage() }
-    single<TracksClient> { LocalTracksClient(get()) }
-    single { DatabaseMock(get()) }
-    single { ItunesClient() }
-    single<TracksRepository> { ItunesTracksRepository(get<ItunesClient>()::search, get()) }
-    single<PlaylistsRepository> {
-        val db = get<DatabaseMock>()
-        object : PlaylistsRepository {
-            override val playlists = db.playlists
-            override fun create(name: String, description: String) = db.create(name, description)
-            override fun delete(id: Long) = db.delete(id)
-            override fun addTrack(playlistId: Long, trackId: Int) = db.addTrack(playlistId, trackId)
-            override fun removeTrack(playlistId: Long, trackId: Int) = db.removeTrack(playlistId, trackId)
-        }
-    }
-    single<SearchHistoryRepository> {
-        val db = get<DatabaseMock>()
-        object : SearchHistoryRepository {
-            override val queries = db.history
-            override fun record(query: String) = db.record(query)
-        }
-    }
-}

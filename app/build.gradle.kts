@@ -1,4 +1,5 @@
 plugins {
+    id("com.google.devtools.ksp")
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -10,8 +11,8 @@ android {
         applicationId = "ru.student.playlistmaker"
         minSdk = 26
         targetSdk = 35
-        versionCode = 6
-        versionName = "1.5"
+        versionCode = 7
+        versionName = "1.6"
         resValue("string", "support_email", providers.gradleProperty("playlistMakerSupportEmail").getOrElse(""))
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -26,6 +27,9 @@ android {
     }
 }
 dependencies {
+    implementation("androidx.room:room-ktx:2.7.2")
+    ksp("androidx.room:room-compiler:2.7.2")
+    implementation("androidx.datastore:datastore-preferences:1.1.4")
     implementation(platform("androidx.compose:compose-bom:2025.02.00"))
     implementation("androidx.activity:activity-compose:1.10.1")
     implementation("androidx.compose.material3:material3")

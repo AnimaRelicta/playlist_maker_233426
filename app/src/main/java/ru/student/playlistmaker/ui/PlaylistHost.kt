@@ -1,6 +1,7 @@
 package ru.student.playlistmaker.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.produceState
 import org.koin.core.parameter.parametersOf
 import ru.student.playlistmaker.ui.playlists.PlaylistViewModel
 import androidx.navigation.NavHostController
@@ -18,7 +19,7 @@ import ru.student.playlistmaker.ui.tracks.TrackDetailsScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import ru.student.playlistmaker.R
-import ru.student.playlistmaker.ui.common.PlaceholderScreen
+import ru.student.playlistmaker.ui.playlists.FavoritesScreen
 import ru.student.playlistmaker.ui.main.MainScreen
 import ru.student.playlistmaker.ui.search.SearchScreen
 import ru.student.playlistmaker.ui.settings.SettingsScreen
@@ -47,11 +48,12 @@ fun PlaylistHost(navController: NavHostController, dark: Boolean, onThemeChange:
             SearchScreen(koinViewModel(), back, ::openTrack)
         }
         composable("${PlaylistScreen.DETAILS.name}/{trackId}",
-            arguments = listOf(navArgument("trackId") { type = NavType.IntType })) { entry ->
+            arguments = listOf(navArgument("trackId") { type = NavType.LongType })) { entry ->
             val vm: LibraryViewModel = koinViewModel()
-            val track = entry.arguments?.getInt("trackId")?.let(vm::track)
+            val trackId = requireNotNull(entry.arguments).getLong("trackId")
+            val track by produceState<Track?>(null, trackId) { value = vm.track(trackId) }
             val favorites by vm.favoriteIds.collectAsStateWithLifecycle(emptySet())
-            val playlists by vm.playlists.collectAsStateWithLifecycle()
+            val playlists by vm.playlists.collectAsStateWithLifecycle(emptyList())
             TrackDetailsScreen(track, back, track?.id in favorites, playlists,
                 onFavorite = { track?.let { vm.toggleFavorite(it.id) } },
                 onAdd = { id -> track?.let { vm.addTrack(id, it.id) } == true })
@@ -59,14 +61,14 @@ fun PlaylistHost(navController: NavHostController, dark: Boolean, onThemeChange:
         composable(PlaylistScreen.SETTINGS.name) { SettingsScreen(dark, onThemeChange, back) }
         composable(PlaylistScreen.PLAYLISTS.name) {
             val vm: LibraryViewModel = koinViewModel()
-            val playlists by vm.playlists.collectAsStateWithLifecycle()
+            val playlists by vm.playlists.collectAsStateWithLifecycle(emptyList())
             PlaylistsScreen(playlists, back, { open(PlaylistScreen.NEW_PLAYLIST) }) { id ->
                 navController.navigate("${PlaylistScreen.PLAYLIST_DETAILS.name}/$id")
             }
         }
         composable(PlaylistScreen.NEW_PLAYLIST.name) {
             val vm: LibraryViewModel = koinViewModel()
-            NewPlaylistScreen(back) { name, description -> if (vm.create(name, description) != null) back() }
+            NewPlaylistScreen(back) { name, description -> vm.create(name, description) != null }
         }
         composable("${PlaylistScreen.PLAYLIST_DETAILS.name}/{playlistId}",
             arguments = listOf(navArgument("playlistId") { type = NavType.LongType })) { entry ->
@@ -75,6 +77,10 @@ fun PlaylistHost(navController: NavHostController, dark: Boolean, onThemeChange:
             val playlist by vm.playlist.collectAsStateWithLifecycle(null)
             PlaylistDetailsScreen(playlist, back, ::openTrack)
         }
-        composable(PlaylistScreen.FAVORITES.name) { PlaceholderScreen(R.string.favorites, "favorites_screen", back) }
+        composable(PlaylistScreen.FAVORITES.name) {
+            val vm: LibraryViewModel = koinViewModel()
+            val favorites by vm.favorites.collectAsStateWithLifecycle(emptyList())
+            FavoritesScreen(favorites, back, ::openTrack)
+        }
     }
 }

@@ -67,7 +67,7 @@ private fun ArtworkPlaceholder() {
 fun TrackDetailsScreen(
     track: Track?, onBack: () -> Unit, favorite: Boolean = false,
     playlists: List<Playlist> = emptyList(), onFavorite: () -> Unit = {},
-    onAdd: (Long) -> Boolean = { false },
+    onAdd: suspend (Long) -> Boolean = { false },
 ) {
     var showPicker by rememberSaveable(track?.id) { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
@@ -110,8 +110,10 @@ fun TrackDetailsScreen(
     if (showPicker) {
         PlaylistPicker(playlists, { showPicker = false }) { id ->
             showPicker = false
-            val message = if (onAdd(id)) added else duplicate
-            scope.launch { snackbar.showSnackbar(message) }
+            scope.launch {
+                val message = if (onAdd(id)) added else duplicate
+                snackbar.showSnackbar(message)
+            }
         }
     }
 }

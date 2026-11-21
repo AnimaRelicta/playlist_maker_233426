@@ -15,12 +15,14 @@ import org.koin.core.context.GlobalContext
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
-import ru.student.playlistmaker.domain.TracksRepository
+import ru.student.playlistmaker.data.TrackStorage
+import ru.student.playlistmaker.data.toTrack
 import ru.student.playlistmaker.ui.PlaylistHost
 import ru.student.playlistmaker.ui.search.*
 import ru.student.playlistmaker.ui.theme.PlaylistTheme
 import ru.student.playlistmaker.ui.tracks.TrackDetailsScreen
 
+@OptIn(ExperimentalTestApi::class)
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], qualifiers = "ru-w360dp-h800dp-xhdpi")
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -39,6 +41,7 @@ class Sprint5UiTest {
         compose.onNodeWithContentDescription("Найти треки").performClick()
         compose.onNodeWithTag("search_loading").assertIsDisplayed()
         org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofSeconds(3))
+        compose.waitUntilExactlyOneExists(hasTestTag("track_1"), 10_000)
         compose.onNodeWithTag("track_1").assertIsDisplayed()
         compose.onNodeWithTag("track_1").performClick()
         compose.onNodeWithTag("track_details").assertIsDisplayed()
@@ -46,14 +49,14 @@ class Sprint5UiTest {
         compose.onNodeWithText("The Beatles").assertIsDisplayed()
         compose.onNodeWithText("02:05").assertIsDisplayed()
         compose.onNodeWithContentDescription("Назад").performClick()
+        compose.waitUntilExactlyOneExists(hasTestTag("track_1"), 10_000)
         compose.onNodeWithTag("track_1").assertIsDisplayed()
         compose.onNodeWithContentDescription("Очистить поиск").performClick()
         compose.onNodeWithTag("track_1").assertDoesNotExist()
     }
 
     @Test fun renderSearchResultsLight() = render(false, "search-results") {
-        val repository = GlobalContext.get().get<TracksRepository>()
-        val tracks = (1..8).map { checkNotNull(repository.findById(it)) }
+        val tracks = TrackStorage().tracks.map { it.toTrack() }
         SearchContent(SearchState("The Beatles", SearchResult.Success(tracks)), {}, {}, {}, {})
     }
 
@@ -72,7 +75,7 @@ class Sprint5UiTest {
     }
 
     @Test fun renderTrackDetailsDark() = render(true, "track-details") {
-        TrackDetailsScreen(GlobalContext.get().get<TracksRepository>().findById(1), onBack = {})
+        TrackDetailsScreen(TrackStorage().tracks.first().toTrack(), onBack = {})
     }
 
     private fun render(dark: Boolean, name: String, screen: @androidx.compose.runtime.Composable () -> Unit) {
