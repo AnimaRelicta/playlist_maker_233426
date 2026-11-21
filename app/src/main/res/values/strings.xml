@@ -20,7 +20,7 @@
     <string name="search_empty">Ничего не нашлось</string>
     <string name="search_failure">Проблемы со связью</string>
     <string name="search_failure_description">Загрузка не удалась. Попробуйте ещё раз</string>
-    <string name="search_retry">Повторить</string>
+    <string name="search_retry">Обновить</string>
     <string name="track_metadata">%1$s • %2$s</string>
     <string name="track_unavailable">Трек недоступен</string>
     <string name="duration">Длительность</string>
@@ -40,4 +40,8 @@
         <item quantity="many">%d треков</item>
         <item quantity="other">%d трека</item>
     </plurals>
+    <string name="unknown_track">Без названия</string>
+    <string name="unknown_artist">Неизвестный исполнитель</string>
+    <string name="unknown_duration">—</string>
+    <string name="playlist_length">%1$d мин · %2$s</string>
 </resources>

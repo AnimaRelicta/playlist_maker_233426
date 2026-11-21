@@ -65,7 +65,8 @@ val tracksDataModule = module {
     single { TrackStorage() }
     single<TracksClient> { LocalTracksClient(get()) }
     single { DatabaseMock(get()) }
-    single<TracksRepository> { LocalTracksRepository(get(), get()) }
+    single { ItunesClient() }
+    single<TracksRepository> { ItunesTracksRepository(get<ItunesClient>()::search, get()) }
     single<PlaylistsRepository> {
         val db = get<DatabaseMock>()
         object : PlaylistsRepository {

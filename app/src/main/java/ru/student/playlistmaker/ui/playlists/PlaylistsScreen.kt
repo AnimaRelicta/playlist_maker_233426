@@ -132,7 +132,9 @@ fun PlaylistDetailsScreen(playlist: Playlist?, onBack: () -> Unit, openTrack: (T
                             Text(playlist.name, fontFamily = PlaylistFont, fontWeight = FontWeight.Bold, fontSize = 24.sp)
                             if (playlist.description.isNotEmpty()) Text(playlist.description)
                             val count = playlist.tracks.size
-                            Text(pluralStringResource(R.plurals.playlist_tracks, count, count))
+                            val totalMinutes = playlist.tracks.sumOf { it.durationMillis } / 60000
+                            Text(stringResource(R.string.playlist_length, totalMinutes,
+                                pluralStringResource(R.plurals.playlist_tracks, count, count)))
                         }
                     }
                     items(playlist.tracks, key = { it.id }) { track -> TrackRow(track) { openTrack(track) } }

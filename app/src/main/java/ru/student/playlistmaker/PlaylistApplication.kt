@@ -15,6 +15,7 @@ val searchModule = module {
     single<CoroutineDispatcher> { Dispatchers.IO }
     viewModel { SearchViewModel(get(), get(), get()) }
     viewModel { LibraryViewModel(get(), get()) }
+    viewModel { (id: Long) -> ru.student.playlistmaker.ui.playlists.PlaylistViewModel(get(), id) }
 }
 
 class PlaylistApplication : Application() {
