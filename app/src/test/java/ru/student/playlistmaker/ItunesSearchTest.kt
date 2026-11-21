@@ -8,9 +8,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import ru.student.playlistmaker.data.DatabaseMock
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
+import ru.student.playlistmaker.data.LibraryDatabase
+import ru.student.playlistmaker.data.RoomPlaylistsRepository
 import ru.student.playlistmaker.data.ItunesTracksRepository
-import ru.student.playlistmaker.data.TrackStorage
 import ru.student.playlistmaker.data.itunesSearchUrl
 import ru.student.playlistmaker.data.parseItunesSongs
 
@@ -44,17 +46,53 @@ class ItunesSearchTest {
     }
 
     @Test fun remoteIdentitySurvivesRepeatedSearchAndPlaylistRoundTrip() = runTest {
-        val database = DatabaseMock(TrackStorage())
+        val context = ApplicationProvider.getApplicationContext<Context>()
         val songs = parseItunesSongs("""{"results":[{"trackId":4100000000,"trackName":"Song",
             "artistName":"Band","trackTimeMillis":61000}]}""")
-        val repository = ItunesTracksRepository({ songs }, database)
-        val first = repository.search("  song  ").single()
-        assertEquals(first.id, repository.search("band").single().id)
-        assertEquals("01:01", first.duration)
-        assertTrue(database.addTrack(1, first.id))
-        assertFalse(database.addTrack(1, first.id))
-        assertEquals(first, repository.findById(database.playlists.value.first().tracks.single().id))
-        repository.toggleFavorite(first.id)
-        assertEquals(listOf(first), repository.favorites.first())
+        val (saved, playlistId, secondId) = withDatabase(context) { database ->
+            val repository = ItunesTracksRepository({ songs }, database.libraryDao())
+            val playlists = RoomPlaylistsRepository(database.libraryDao())
+            val first = repository.search("  song  ").single()
+            assertEquals(-4100000000L, first.id)
+            assertEquals(first.id, repository.search("band").single().id)
+            assertEquals("01:01", first.duration)
+            assertNull(playlists.create("  ", "ignored"))
+            val id = checkNotNull(playlists.create("  Road trip  ", " Long drive "))
+            val second = checkNotNull(playlists.create("Second", ""))
+            assertFalse(playlists.addTrack(id, 999))
+            assertFalse(playlists.addTrack(Long.MAX_VALUE, first.id))
+            assertTrue(playlists.addTrack(id, first.id))
+            assertFalse(playlists.addTrack(id, first.id))
+            assertTrue(playlists.addTrack(second, first.id))
+            repository.toggleFavorite(first.id)
+            Triple(first, id, second)
+        }
+        withDatabase(context) { database ->
+            val repository = ItunesTracksRepository({ error("Network must not be used") }, database.libraryDao())
+            val playlists = RoomPlaylistsRepository(database.libraryDao())
+            val playlist = checkNotNull(playlists.getPlaylist(playlistId).first())
+            assertEquals("Road trip", playlist.name)
+            assertEquals("Long drive", playlist.description)
+            assertEquals(listOf(saved), playlist.tracks)
+            assertEquals(saved, repository.findById(saved.id))
+            assertEquals(listOf(saved), repository.favorites.first())
+            playlists.delete(playlistId)
+            assertNull(playlists.getPlaylist(playlistId).first())
+            assertEquals(listOf(saved), playlists.getPlaylist(secondId).first()?.tracks)
+            playlists.removeTrack(secondId, saved.id)
+            assertEquals(emptyList<Any>(), playlists.getPlaylist(secondId).first()?.tracks)
+            assertEquals(listOf(saved), repository.favorites.first())
+            repository.toggleFavorite(saved.id)
+            assertTrue(repository.favorites.first().isEmpty())
+        }
+    }
+
+    private suspend fun <T> withDatabase(context: Context, block: suspend (LibraryDatabase) -> T): T {
+        val database = LibraryDatabase.open(context)
+        return try {
+            block(database)
+        } finally {
+            database.close()
+        }
     }
 }

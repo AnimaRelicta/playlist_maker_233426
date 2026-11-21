@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import ru.student.playlistmaker.R
 import ru.student.playlistmaker.domain.Playlist
 import ru.student.playlistmaker.domain.Track
@@ -89,10 +90,11 @@ private fun PlaylistArtwork(playlist: Playlist?, modifier: Modifier) {
 }
 
 @Composable
-fun NewPlaylistScreen(onBack: () -> Unit, onSave: (String, String) -> Unit) {
+fun NewPlaylistScreen(onBack: () -> Unit, onSave: suspend (String, String) -> Boolean) {
     var name by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
-    var saving by rememberSaveable { mutableStateOf(false) }
+    var saving by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
     Surface(Modifier.fillMaxSize().testTag("new_playlist_screen")) {
         Column {
             ScreenHeader(R.string.new_playlist, onBack)
@@ -107,7 +109,13 @@ fun NewPlaylistScreen(onBack: () -> Unit, onSave: (String, String) -> Unit) {
                     label = { Text(stringResource(R.string.playlist_description)) })
             }
             Button(
-                onClick = { saving = true; onSave(name.trim(), description.trim()) },
+                onClick = {
+                    saving = true
+                    scope.launch {
+                        if (onSave(name.trim(), description.trim())) onBack()
+                        saving = false
+                    }
+                },
                 enabled = name.isNotBlank() && !saving,
                 modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 32.dp),
                 shape = RoundedCornerShape(8.dp),

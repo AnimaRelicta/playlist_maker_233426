@@ -75,19 +75,24 @@ internal class ItunesClient {
 
 internal class ItunesTracksRepository(
     private val searchRemote: (String) -> List<ItunesSong>,
-    private val database: DatabaseMock,
+    private val dao: LibraryDao,
 ) : TracksRepository {
-    override val favoriteIds = database.favorites
-    override val favorites = favoriteIds.map { ids -> ids.mapNotNull(database::findTrack) }
+    override val favorites = dao.favorites().map { tracks -> tracks.map { it.toDomain() } }
+    override val favoriteIds = favorites.map { tracks -> tracks.mapTo(mutableSetOf()) { it.id } }
 
     override suspend fun search(query: String): List<Track> {
         val term = query.trim()
         if (term.isEmpty()) return emptyList()
         val songs = runInterruptible { searchRemote(term) }
         currentCoroutineContext().ensureActive()
-        return database.cacheSongs(songs)
+        val tracks = songs.map { song ->
+            Track(-song.appleId, song.title, song.artist, song.durationMillis ?: 0L, Track.Artwork.NONE,
+                artworkUrl = song.artworkUrl, durationKnown = song.durationMillis != null)
+        }
+        dao.saveTracks(tracks.map { it.toEntity() })
+        return tracks
     }
 
-    override fun findById(id: Int): Track? = database.findTrack(id)
-    override fun toggleFavorite(trackId: Int) = database.toggleFavorite(trackId)
+    override suspend fun findById(id: Long): Track? = dao.findTrack(id)?.toDomain()
+    override suspend fun toggleFavorite(trackId: Long) = dao.toggleFavorite(trackId)
 }
