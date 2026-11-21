@@ -33,7 +33,7 @@ class SearchTest {
         Dispatchers.setMain(dispatcher)
         val store = ViewModelStore()
         try {
-            val vm = SearchViewModel(LocalTracksRepository(LocalTracksClient(TrackStorage())))
+            val vm = SearchViewModel(LocalTracksRepository(LocalTracksClient(TrackStorage())), dispatcher)
             store.put("search", vm)
             assertEquals(SearchResult.Initial, vm.state.value.result)
             vm.changeQuery("Beatles")
@@ -57,7 +57,8 @@ class SearchTest {
     }
 
     @Test fun failureCanBeRetriedAndEmptySuccessIsDistinct() = runTest {
-        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
         val store = ViewModelStore()
         try {
             var calls = 0
@@ -68,7 +69,7 @@ class SearchTest {
                     return emptyList()
                 }
                 override fun findById(id: Int): Track? = null
-            })
+            }, dispatcher)
             store.put("search", vm)
             vm.search()
             assertEquals(SearchResult.Initial, vm.state.value.result)
@@ -84,4 +85,41 @@ class SearchTest {
             Dispatchers.resetMain()
         }
     }
+    @Test fun lateFailureFromCancelledQueryCannotReplaceNewResults() = runTest {
+        val main = StandardTestDispatcher(testScheduler, "UI")
+        val io = StandardTestDispatcher(testScheduler, "repository")
+        Dispatchers.setMain(main)
+        val store = ViewModelStore()
+        try {
+            val selected = Track(7, "Eleanor Rigby", "The Beatles", 198000, Track.Artwork.NONE)
+            val repository = object : TracksRepository {
+                override suspend fun search(query: String): List<Track> {
+                    assertSame(io, kotlinx.coroutines.currentCoroutineContext()[kotlin.coroutines.ContinuationInterceptor])
+                    if (query == "old") {
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) { delay(3000) }
+                        throw IOException("Late response")
+                    }
+                    return listOf(selected)
+                }
+                override fun findById(id: Int): Track? = null
+            }
+            val vm = SearchViewModel(repository, io)
+            store.put("search", vm)
+            vm.changeQuery("old")
+            vm.search()
+            runCurrent()
+            vm.changeQuery("Eleanor")
+            vm.search()
+            runCurrent()
+            val expected = SearchResult.Success(listOf(selected))
+            assertEquals(expected, vm.state.value.result)
+            advanceUntilIdle()
+            assertEquals("Eleanor", vm.state.value.query)
+            assertEquals(expected, vm.state.value.result)
+        } finally {
+            store.clear()
+            Dispatchers.resetMain()
+        }
+    }
+
 }

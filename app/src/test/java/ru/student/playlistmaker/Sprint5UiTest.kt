@@ -6,6 +6,8 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.core.view.drawToBitmap
 import androidx.navigation.compose.rememberNavController
 import java.io.File
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -29,6 +31,7 @@ class Sprint5UiTest {
     @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
 
     @Test fun searchRouteUsesKoinAndOpensSelectedDetails() {
+        GlobalContext.get().declare<CoroutineDispatcher>(Dispatchers.Main)
         compose.setContent { PlaylistTheme(false) { PlaylistHost(rememberNavController(), false, {}) } }
         compose.onNodeWithTag("menu_search").performClick()
         compose.onNodeWithTag("search_input").performTextInput("yEsTeR")

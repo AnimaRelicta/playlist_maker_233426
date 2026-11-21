@@ -3,7 +3,10 @@ package ru.student.playlistmaker.ui.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +23,10 @@ sealed interface SearchResult {
 
 data class SearchState(val query: String = "", val result: SearchResult = SearchResult.Initial)
 
-class SearchViewModel(private val repository: TracksRepository) : ViewModel() {
+class SearchViewModel(
+    private val repository: TracksRepository,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+) : ViewModel() {
     private val mutableState = MutableStateFlow(SearchState())
     val state = mutableState.asStateFlow()
     private var pendingSearch: Job? = null
@@ -38,7 +44,7 @@ class SearchViewModel(private val repository: TracksRepository) : ViewModel() {
         mutableState.value = SearchState(query, SearchResult.Searching)
         pendingSearch = viewModelScope.launch {
             try {
-                val tracks = repository.search(query)
+                val tracks = withContext(ioDispatcher) { repository.search(query) }
                 ensureActive()
                 mutableState.value = SearchState(query, SearchResult.Success(tracks))
             } catch (exception: CancellationException) {
