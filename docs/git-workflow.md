@@ -12,3 +12,17 @@
 ```
 
 Принятый этап сливается в `main`.
+
+## Промежуточное ревью
+
+После ручной приёмки спринта 6 влейте `feature/sprint-06` в `main` и отправьте обе ветки. В GitHub проверьте, что репозиторий имеет видимость **Private**, и предоставьте доступ преподавателю и ревьюеру по их GitHub-логинам.
+
+Создайте ветку `review-midterm` от первого коммита, отправьте её и откройте PR с **base** `review-midterm` и **compare** `main`. Такой PR показывает весь код проекта.
+
+```powershell
+$initial = git rev-list --max-parents=0 main
+git branch review-midterm $initial
+git push -u origin review-midterm
+```
+
+Оставьте `review-midterm` на первом коммите до окончания ревью. Правки в `main` появятся в открытом PR автоматически.
