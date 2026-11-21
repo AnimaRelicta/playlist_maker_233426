@@ -26,5 +26,6 @@ interface TracksRepository {
     suspend fun findById(id: Long): Track?
     val favoriteIds: Flow<Set<Long>>
     val favorites: Flow<List<Track>>
+    suspend fun removeFavorite(trackId: Long)
     suspend fun toggleFavorite(trackId: Long)
 }

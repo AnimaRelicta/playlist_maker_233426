@@ -15,7 +15,15 @@ class LibraryViewModel(
     val favorites = tracksRepository.favorites
 
     suspend fun track(id: Long) = tracksRepository.findById(id)
-    suspend fun create(name: String, description: String) = playlistsRepository.create(name, description)
+    suspend fun create(name: String, description: String, coverImageUri: String?) =
+        playlistsRepository.create(name, description, coverImageUri)
+
+    suspend fun deletePlaylist(id: Long) = playlistsRepository.delete(id)
+    suspend fun mergePlaylists(sourceId: Long, targetId: Long) = playlistsRepository.merge(sourceId, targetId)
+
+    fun removeFavorite(trackId: Long) {
+        viewModelScope.launch { tracksRepository.removeFavorite(trackId) }
+    }
     suspend fun addTrack(playlistId: Long, trackId: Long) = playlistsRepository.addTrack(playlistId, trackId)
 
     fun toggleFavorite(trackId: Long) {

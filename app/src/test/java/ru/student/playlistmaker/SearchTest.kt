@@ -73,6 +73,7 @@ class SearchTest {
                 override suspend fun findById(id: Long): Track? = null
                     override val favoriteIds = kotlinx.coroutines.flow.flowOf(emptySet<Long>())
                     override val favorites = kotlinx.coroutines.flow.flowOf(emptyList<Track>())
+                    override suspend fun removeFavorite(trackId: Long) = Unit
                     override suspend fun toggleFavorite(trackId: Long) = Unit
             }, dispatcher)
             store.put("search", vm)
@@ -109,6 +110,7 @@ class SearchTest {
                 override suspend fun findById(id: Long): Track? = null
                     override val favoriteIds = kotlinx.coroutines.flow.flowOf(emptySet<Long>())
                     override val favorites = kotlinx.coroutines.flow.flowOf(emptyList<Track>())
+                    override suspend fun removeFavorite(trackId: Long) = Unit
                     override suspend fun toggleFavorite(trackId: Long) = Unit
             }
             val vm = SearchViewModel(repository, io)

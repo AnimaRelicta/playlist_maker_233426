@@ -43,6 +43,10 @@ internal class LocalTracksRepository(
         tracks.map { it.toDomain() }
     } ?: flowOf(emptyList())
     override val favoriteIds = favorites.map { tracks -> tracks.mapTo(mutableSetOf()) { it.id } }
+    override suspend fun removeFavorite(trackId: Long) {
+        dao?.removeFavorite(trackId)
+    }
+
     override suspend fun toggleFavorite(trackId: Long) {
         dao?.toggleFavorite(trackId)
     }

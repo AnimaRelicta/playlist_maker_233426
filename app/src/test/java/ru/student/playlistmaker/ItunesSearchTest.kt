@@ -87,6 +87,53 @@ class ItunesSearchTest {
         }
     }
 
+    @Test fun mergesPlaylistsWithoutDuplicatesAndKeepsTargetCoverAndFavorites() = runTest {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val cover = "content://covers/target"
+        val (targetId, trackIds) = withDatabase(context) { database ->
+            val songs = (1L..4L).map { id ->
+                ru.student.playlistmaker.data.ItunesSong(id, "Track $id", "Artist", 61000L, null)
+            }
+            val dao = database.libraryDao()
+            val tracks = ItunesTracksRepository({ songs }, dao)
+            val ids = tracks.search("tracks").map { it.id }
+            val playlists = RoomPlaylistsRepository(dao)
+            val source = checkNotNull(playlists.create("Source", ""))
+            val target = checkNotNull(playlists.create("Target", "Description", cover))
+            val other = checkNotNull(playlists.create("Other", ""))
+            for (id in ids.drop(1)) assertTrue(playlists.addTrack(source, id))
+            for (id in ids.take(2)) assertTrue(playlists.addTrack(target, id))
+            assertTrue(playlists.addTrack(other, ids.last()))
+            tracks.toggleFavorite(ids.last())
+
+            assertFalse(playlists.merge(source, source))
+            assertFalse(playlists.merge(source, Long.MAX_VALUE))
+            assertFalse(playlists.merge(Long.MAX_VALUE, target))
+            assertEquals(ids.drop(1), playlists.getPlaylist(source).first()?.tracks?.map { it.id })
+            assertTrue(playlists.merge(source, target))
+            assertNull(playlists.getPlaylist(source).first())
+            assertEquals(ids, playlists.getPlaylist(target).first()?.tracks?.map { it.id })
+            playlists.removeTrack(target, ids.last())
+            assertEquals(listOf(ids.last()), playlists.getPlaylist(other).first()?.tracks?.map { it.id })
+            target to ids
+        }
+        withDatabase(context) { database ->
+            val dao = database.libraryDao()
+            val playlists = RoomPlaylistsRepository(dao)
+            val tracks = ItunesTracksRepository({ error("Network must not be used") }, dao)
+            val target = checkNotNull(playlists.getPlaylist(targetId).first())
+            assertEquals("Target", target.name)
+            assertEquals("Description", target.description)
+            assertEquals(cover, target.coverImageUri)
+            assertEquals(trackIds.dropLast(1), target.tracks.map { it.id })
+            assertEquals(setOf(trackIds.last()), tracks.favoriteIds.first())
+            tracks.removeFavorite(trackIds.last())
+            tracks.removeFavorite(trackIds.last())
+            assertTrue(tracks.favoriteIds.first().isEmpty())
+            assertNotNull(tracks.findById(trackIds.last()))
+        }
+    }
+
     private suspend fun <T> withDatabase(context: Context, block: suspend (LibraryDatabase) -> T): T {
         val database = LibraryDatabase.open(context)
         return try {

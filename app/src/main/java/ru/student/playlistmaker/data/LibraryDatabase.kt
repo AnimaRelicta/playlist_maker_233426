@@ -95,6 +95,24 @@ internal interface LibraryDao {
     """)
     suspend fun addTrack(playlistId: Long, trackId: Long): Long
 
+    @Query("SELECT EXISTS(SELECT 1 FROM playlists WHERE id = :id)")
+    suspend fun playlistExists(id: Long): Boolean
+
+    @Query("""
+        INSERT OR IGNORE INTO playlist_tracks (playlistId, trackId)
+        SELECT :targetId, trackId FROM playlist_tracks
+        WHERE playlistId = :sourceId ORDER BY id
+    """)
+    suspend fun copyPlaylistTracks(sourceId: Long, targetId: Long)
+
+    @Transaction
+    suspend fun merge(sourceId: Long, targetId: Long): Boolean {
+        if (sourceId == targetId || !playlistExists(sourceId) || !playlistExists(targetId)) return false
+        copyPlaylistTracks(sourceId, targetId)
+        deletePlaylist(sourceId)
+        return true
+    }
+
     @Query("DELETE FROM playlist_tracks WHERE playlistId = :playlistId AND trackId = :trackId")
     suspend fun removeTrack(playlistId: Long, trackId: Long)
 

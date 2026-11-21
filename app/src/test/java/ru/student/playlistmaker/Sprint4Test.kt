@@ -34,7 +34,7 @@ class Sprint4Test {
     @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
 
     @Test fun allScreensOpenAndReturn() {
-        compose.setContent { PlaylistTheme(false) { PlaylistHost(rememberNavController(), false, {}) } }
+        compose.setContent { PlaylistTheme(false) { PlaylistHost(rememberNavController(), false, onThemeChange = {}) } }
         listOf("search", "settings", "playlists", "favorites").forEach { screen ->
             compose.onNodeWithTag("menu_$screen").performClick()
             compose.onNodeWithTag("${screen}_screen").assertIsDisplayed()
