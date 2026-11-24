@@ -1,0 +1,49 @@
+.gradle/
+.kotlin/
+**/build/
+local.properties
+.idea/
+*.iml
+.venv/
+__pycache__/
+.tools/
+
+# Local Android/Gradle tooling and generated artifacts
+.android/
+captures/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.hprof
+*.log
+*.jks
+*.keystore
+keystore.properties
+.env
+.env.*
+!.env.example
+
+# Editors / operating system
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.tmp
+
+# Python tooling
+.pytest_cache/
+.ruff_cache/
+*.py[cod]
+*.egg-info/
+dist/
+
+# Local Figma exports and course materials
+/figma/Playlist-Maker/
+/figma/reference/
+/figma/icons/
+/figma/export-manifest.json
+/docs/source/
+/docs/yandex_practicum.txt
+!gradle/wrapper/gradle-wrapper.jar
